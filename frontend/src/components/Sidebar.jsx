@@ -7,6 +7,7 @@ function Sidebar() {
       <Link to="/attendance" style={styles.link}>Attendance</Link>
       <Link to="/wallet" style={styles.link}>Wallet</Link>
       <Link to="/justification" style={styles.link}>Justification</Link>
+      <Link to="/leave" style={styles.link}>Leave</Link>  
       <Link to="/admin" style={styles.link}>Admin Panel</Link>
     </div>
   );
@@ -24,7 +25,7 @@ const styles = {
   },
 
   link: {
-    color: "#ffffff",        // 👈 Change hyperlink color here
+    color: "#ffffff",
     textDecoration: "none",
     fontSize: "20px"
   }

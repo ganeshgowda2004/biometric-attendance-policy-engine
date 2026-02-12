@@ -1,13 +1,16 @@
 from flask import Blueprint, request, jsonify
 from app import db
 from app.models.leave_model import Leave
+from sqlalchemy import desc
 from datetime import datetime
 
 leave_bp = Blueprint("leave_bp", __name__)
 
+
 @leave_bp.route("/apply-leave", methods=["POST"])
 def apply_leave():
     data = request.get_json()
+
     if not data:
         return jsonify({"error": "Invalid JSON data"}), 400
 
@@ -17,13 +20,12 @@ def apply_leave():
     except ValueError:
         return jsonify({"error": "Invalid date format"}), 400
 
-    new_leave = Leave(
-        user_id=data["userId"],
-        leave_type=data["leaveType"],
-        from_date=from_date,
-        to_date=to_date,
-        reason=data["reason"]
-    )
+    new_leave = Leave()
+    new_leave.employee_id = data["employeeId"]
+    new_leave.leave_type = data["leaveType"]
+    new_leave.from_date = from_date
+    new_leave.to_date = to_date
+    new_leave.reason = data["reason"]
 
     db.session.add(new_leave)
     db.session.commit()
@@ -31,19 +33,22 @@ def apply_leave():
     return jsonify({"message": "Leave applied successfully"})
 
 
-@leave_bp.route("/my-leaves/<int:user_id>", methods=["GET"])
-def get_my_leaves(user_id):
-    leaves = Leave.query.filter_by(user_id=user_id).all()
+@leave_bp.route("/latest-leave/<string:employee_id>", methods=["GET"])
+def get_latest_leave(employee_id):
 
-    result = []
-    for leave in leaves:
-        result.append({
-            "id": leave.id,
-            "leaveType": leave.leave_type,
-            "fromDate": str(leave.from_date),
-            "toDate": str(leave.to_date),
-            "reason": leave.reason,
-            "status": leave.status
-        })
+    latest_leave = (
+        Leave.query
+        .filter_by(employee_id=employee_id)
+        .order_by(desc(Leave.applied_on))
+        .first()
+    )
 
-    return jsonify(result)
+    if latest_leave is None:
+        return jsonify({})
+
+    return jsonify({
+        "leaveType": latest_leave.leave_type,
+        "fromDate": latest_leave.from_date.strftime("%Y-%m-%d"),
+        "toDate": latest_leave.to_date.strftime("%Y-%m-%d"),
+        "status": latest_leave.status
+    })
