@@ -7,6 +7,7 @@ import Attendance from "./pages/Attendance";
 import Wallet from "./pages/Wallet";
 import Justification from "./pages/Justification";
 import AdminPanel from "./pages/AdminPanel";
+import Leave from "./pages/Leave";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
@@ -58,6 +59,15 @@ function App() {
         element={
           <ProtectedRoute>
             <AdminPanel />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/leave"
+        element={
+          <ProtectedRoute>
+            <Leave />
           </ProtectedRoute>
         }
       />

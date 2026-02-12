@@ -50,6 +50,7 @@ const styles = {
     borderCollapse: "collapse",
     backgroundColor: "white",
     boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+    textAlign: "center"
   },
   late: {
     color: "red",
