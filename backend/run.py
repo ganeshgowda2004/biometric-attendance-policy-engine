@@ -1,8 +1,7 @@
 from app import create_app, db
-from app.models.test_model import TestConnection
+
 
 app = create_app()
-
 with app.app_context():
     try:
         db.create_all()
