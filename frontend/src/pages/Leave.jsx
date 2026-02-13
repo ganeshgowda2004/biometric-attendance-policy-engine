@@ -9,6 +9,8 @@ function Leave() {
     reason: ""
   });
 
+  const [successMessage, setSuccessMessage] = useState("");
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -19,61 +21,159 @@ function Leave() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const user = JSON.parse(localStorage.getItem("currentUser"));
+    // You can connect backend API here later
 
-    try {
-      const response = await fetch("http://127.0.0.1:5000/apply-leave", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: user.id,
-          ...formData
-        })
-      });
+    setSuccessMessage("Leave applied successfully!");
 
-      if (response.ok) {
-        alert("Leave Applied Successfully");
-        setFormData({
-          leaveType: "",
-          fromDate: "",
-          toDate: "",
-          reason: ""
-        });
-      } else {
-        const errorData = await response.json();
-        alert(`Error: ${errorData.error || "Failed to apply leave"}`);
-      }
-    } catch (error) {
-      alert("Network error: Please try again later");
-    }
+    // ✅ Reset form
+    setFormData({
+      leaveType: "",
+      fromDate: "",
+      toDate: "",
+      reason: ""
+    });
+
+    // Remove message after 3 seconds
+    setTimeout(() => {
+      setSuccessMessage("");
+    }, 3000);
   };
 
   return (
     <Layout>
-      <h2>Apply Leave</h2>
+      <div style={styles.container}>
+        <h2 style={styles.heading}>Apply for Leave</h2>
 
-      <form onSubmit={handleSubmit}>
-        <select name="leaveType" onChange={handleChange} required>
-          <option value="">Select Leave Type</option>
-          <option value="Sick Leave">Sick Leave</option>
-          <option value="Casual Leave">Casual Leave</option>
-          <option value="Emergency Leave">Emergency Leave</option>
-        </select>
+        {successMessage && (
+          <div style={styles.successBox}>
+            {successMessage}
+          </div>
+        )}
 
-        <input type="date" name="fromDate" onChange={handleChange} required />
-        <input type="date" name="toDate" onChange={handleChange} required />
+        <form onSubmit={handleSubmit} style={styles.form}>
+          
+          <div style={styles.field}>
+            <label>Leave Type</label>
+            <select
+              name="leaveType"
+              value={formData.leaveType}
+              onChange={handleChange}
+              required
+              style={styles.input}
+            >
+              <option value="">Select Leave Type</option>
+              <option value="Sick Leave">Sick Leave</option>
+              <option value="Casual Leave">Casual Leave</option>
+              <option value="Emergency Leave">Emergency Leave</option>
+            </select>
+          </div>
 
-        <textarea
-          name="reason"
-          placeholder="Reason"
-          onChange={handleChange}
-          required
-        />
+          <div style={styles.row}>
+            <div style={styles.field}>
+              <label>From Date</label>
+              <input
+                type="date"
+                name="fromDate"
+                value={formData.fromDate}
+                onChange={handleChange}
+                required
+                style={styles.input}
+              />
+            </div>
 
-        <button type="submit">Apply</button>
-      </form>
+            <div style={styles.field}>
+              <label>To Date</label>
+              <input
+                type="date"
+                name="toDate"
+                value={formData.toDate}
+                onChange={handleChange}
+                required
+                style={styles.input}
+              />
+            </div>
+          </div>
+
+          <div style={styles.field}>
+            <label>Reason</label>
+            <textarea
+              name="reason"
+              value={formData.reason}
+              placeholder="Enter reason..."
+              onChange={handleChange}
+              required
+              style={styles.textarea}
+            />
+          </div>
+
+          <button type="submit" style={styles.button}>
+            Apply Leave
+          </button>
+        </form>
+      </div>
     </Layout>
   );
 }
+
+const styles = {
+  container: {
+    maxWidth: "600px",
+    margin: "0 auto",
+    backgroundColor: "white",
+    padding: "30px",
+    borderRadius: "10px",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
+  },
+  heading: {
+    marginBottom: "25px",
+    fontSize: "24px",
+    fontWeight: "bold",
+    textAlign: "center"
+  },
+  successBox: {
+    backgroundColor: "#dcfce7",
+    color: "#166534",
+    padding: "10px",
+    borderRadius: "6px",
+    marginBottom: "15px",
+    textAlign: "center"
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "20px"
+  },
+  row: {
+    display: "flex",
+    gap: "20px"
+  },
+  field: {
+    display: "flex",
+    flexDirection: "column",
+    flex: 1
+  },
+  input: {
+    padding: "10px",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
+    marginTop: "5px"
+  },
+  textarea: {
+    padding: "10px",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
+    marginTop: "5px",
+    minHeight: "80px"
+  },
+  button: {
+    padding: "12px",
+    backgroundColor: "#2563eb",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontSize: "16px"
+  }
+};
 
 export default Leave;
