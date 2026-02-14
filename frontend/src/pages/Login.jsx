@@ -1,66 +1,96 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import API from "../services/api";
 
-function Login() {
+const Login = () => {
   const navigate = useNavigate();
 
-  const [employeeId, setEmployeeId] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    employee_id: "",
+    password: "",
+  });
 
-  const handleLogin = (e) => {
+  const [error, setError] = useState("");
+
+  const { employee_id, password } = formData;
+
+  const onChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const onSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
-    const users = JSON.parse(localStorage.getItem("users")) || [];
+    try {
+      const res = await API.post("/auth/login", {
+        employee_id,
+        password,
+      });
 
-    const validUser = users.find(
-      (user) =>
-        user.employeeId === employeeId &&
-        user.password === password
-    );
+      // 🔐 Store JWT token (IMPORTANT: access_token, not token)
+      localStorage.setItem("token", res.data.access_token);
 
-    if (validUser) {
-      localStorage.setItem("token", "dummy-token");
-      localStorage.setItem("currentUser", JSON.stringify(validUser));
+      // Optional: store user info
+      localStorage.setItem("user", JSON.stringify(res.data.user));
 
+      // Redirect to dashboard
       navigate("/dashboard");
-    } else {
-      alert("Invalid Employee ID or Password");
+
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Invalid credentials"
+      );
     }
   };
 
   return (
     <div style={styles.container}>
-      <form style={styles.form} onSubmit={handleLogin}>
-        <h2>Attendify Login</h2>
+      <div style={styles.card}>
+        <h2>Login</h2>
 
-        <input
-          type="text"
-          placeholder="Employee ID"
-          value={employeeId}
-          onChange={(e) => setEmployeeId(e.target.value)}
-          style={styles.input}
-        />
+        {error && <p style={styles.error}>{error}</p>}
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={styles.input}
-        />
+        <form onSubmit={onSubmit}>
+          <div style={styles.inputGroup}>
+            <label>Employee ID</label>
+            <input
+              type="text"
+              name="employee_id"
+              value={employee_id}
+              onChange={onChange}
+              required
+            />
+          </div>
 
-        <button type="submit" style={styles.button}>
-          Login
-        </button>
+          <div style={styles.inputGroup}>
+            <label>Password</label>
+            <input
+              type="password"
+              name="password"
+              value={password}
+              onChange={onChange}
+              required
+            />
+          </div>
 
-        <p style={{ marginTop: "10px", textAlign: "center" }}>
-          Don't have an account?{" "}
-          <Link to="/register">Register</Link>
+          <button type="submit" style={styles.button}>
+            Login
+          </button>
+        </form>
+
+        <p style={styles.registerText}>
+          Don’t have an account?{" "}
+          <span
+            style={styles.registerLink}
+            onClick={() => navigate("/register")}
+          >
+            Register
+          </span>
         </p>
-      </form>
+      </div>
     </div>
   );
-}
+};
 
 const styles = {
   container: {
@@ -68,27 +98,39 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f1f5f9",
+    backgroundColor: "#f4f4f4",
   },
-  form: {
+  card: {
+    padding: "30px",
+    width: "350px",
+    backgroundColor: "#fff",
+    boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+    borderRadius: "8px",
+  },
+  inputGroup: {
+    marginBottom: "15px",
     display: "flex",
     flexDirection: "column",
-    gap: "15px",
-    padding: "30px",
-    backgroundColor: "white",
-    borderRadius: "10px",
-    width: "320px",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-  },
-  input: {
-    padding: "10px",
-    fontSize: "14px",
   },
   button: {
+    width: "100%",
     padding: "10px",
-    backgroundColor: "#2563eb",
-    color: "white",
+    backgroundColor: "#007bff",
+    color: "#fff",
     border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+  error: {
+    color: "red",
+    marginBottom: "10px",
+  },
+  registerText: {
+    marginTop: "15px",
+    textAlign: "center",
+  },
+  registerLink: {
+    color: "#007bff",
     cursor: "pointer",
   },
 };

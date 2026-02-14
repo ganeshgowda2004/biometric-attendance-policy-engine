@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import API from "../services/api";
 
 function Register() {
   const navigate = useNavigate();
@@ -11,6 +12,8 @@ function Register() {
     password: ""
   });
 
+  const [error, setError] = useState("");
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -18,44 +21,36 @@ function Register() {
     });
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
+    setError("");
 
-    const users = JSON.parse(localStorage.getItem("users")) || [];
+    try {
+      const res = await API.post("/auth/register", formData);
 
-    // Prevent duplicate email
-    const existingUser = users.find(
-      (user) => user.email === formData.email
-    );
+      alert(
+        `Registration Successful!\nYour Employee ID is: ${res.data.employee_id}`
+      );
 
-    if (existingUser) {
-      alert("User already registered with this email");
-      return;
+      navigate("/");
+
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Registration failed"
+      );
     }
-
-    const newEmployeeId =
-      "EMP2025" + String(users.length + 1).padStart(3, "0");
-
-    const newUser = {
-      ...formData,
-      employeeId: newEmployeeId
-    };
-
-    users.push(newUser);
-
-    localStorage.setItem("users", JSON.stringify(users));
-
-    alert(
-      `Registration Successful!\nYour Employee ID is: ${newEmployeeId}`
-    );
-
-    navigate("/");
   };
 
   return (
     <div style={styles.container}>
       <form style={styles.form} onSubmit={handleRegister}>
         <h2>Register</h2>
+
+        {error && (
+          <p style={{ color: "red", textAlign: "center" }}>
+            {error}
+          </p>
+        )}
 
         <input
           type="text"
